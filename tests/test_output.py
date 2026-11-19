@@ -61,14 +61,12 @@ def test_class_2D_one_img(data_dir, image_names, cellposemodel_fixture_24layer, 
         return 
     
     if diameter and compute_masks:
-        # size of masks will be different, so need to adjust calculation
+        # Check that the predicted and ground-truth masks have the same spatial dimensions.
         masks_gt_file = Path(str(img_file).replace('_tif.tif', '_tif_cp4_gt_masks.png'))
         masks_gt = io.imread_2D(masks_gt_file)
 
-        masks_pred_shape = [int(s * diameter/30) for s in masks_pred.shape]
-        assert [a == b for a, b in zip(masks_gt.shape[:2], masks_pred_shape[:2])]
+        assert masks_gt.shape[:2] == masks_pred.shape[:2]
 
-        # don't compare the images, because they are different sizes and won't match
         return
     
     io.imsave(data_dir / '2D' / (img_file.stem + "_cp_masks.png"), masks_pred)
