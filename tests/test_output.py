@@ -18,7 +18,7 @@ r_tol, a_tol = 1e-2, 1e-2
 
 def clear_output(data_dir, image_names):
     data_dir_2D = data_dir.joinpath("2D")
-    data_dir_3D = data_dir.joinpath("2D")
+    data_dir_3D = data_dir.joinpath("3D")
     for image_name in image_names:
         if "2D" in image_name:
             cached_file = str(data_dir_2D.joinpath(image_name))
@@ -38,6 +38,32 @@ def clear_output(data_dir, image_names):
         if os.path.exists(npy_output):
             os.remove(npy_output)
 
+@pytest.mark.parametrize("dimension", ["2D", "3D"])
+def test_clear_output_removes_generated_outputs(tmp_path, dimension):
+    output_dir = tmp_path / dimension
+    output_dir.mkdir()
+
+    image_name = f"sample_{dimension}"
+    original_image = output_dir / f"{image_name}.tif"
+    original_image.touch()
+
+    generated_files = [
+        output_dir / f"{image_name}_cp_masks.png",
+        output_dir / f"{image_name}_cp_masks.tif",
+        output_dir / f"{image_name}_flowps_test.tif",
+        output_dir / f"{image_name}_seg.npy",
+    ]
+
+    for file in generated_files:
+        file.touch()
+
+    clear_output(tmp_path, [original_image.name])
+
+    assert all(not file.exists() for file in generated_files)
+    assert original_image.exists()
+
+    # Running cleanup again should not raise an error.
+    clear_output(tmp_path, [original_image.name])
 
 @pytest.mark.parametrize('compute_masks, resample, diameter', 
                          [
