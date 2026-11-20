@@ -21,8 +21,17 @@ def img_2d(data_dir):
 
 def test_random_rotate_and_resize__default():
     nimg = 2
-    X = [np.random.rand(64, 64) for i in range(nimg)]
-    random_rotate_and_resize(X)
+    X = [np.random.rand(1, 64, 64) for i in range(nimg)]
+    imgs_aug, lbls_aug, scales = random_rotate_and_resize(X)
+
+    assert imgs_aug.shape == (nimg, 1, 256, 256)
+    assert imgs_aug.isfinite().all()
+
+    assert lbls_aug is None
+
+    assert scales.shape == (nimg,)
+    assert np.all(np.isfinite(scales))
+    assert np.all((scales >= 0.5) & (scales <= 1.5))
 
 
 def test_normalize_img(img_3d):
